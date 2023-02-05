@@ -8,7 +8,7 @@
 
 constexpr  GLint width = 1920, height =1080;
 constexpr float toRadians = 3.14159265f / 180.0f;
-GLuint vao, vbo, ibo, shader, uniformModel;
+GLuint vao, vbo, ibo, shader, uniformModel, uniformProjection;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -24,12 +24,12 @@ static const char* v_shader = R"(
 
     out vec4 vCol;
 
-    uniform float size;
     uniform mat4 model; 
+    uniform mat4 projection; 
     
     void main()
     {
-        gl_Position =  model * vec4(pos, 1.0);
+        gl_Position =  projection * model * vec4(pos, 1.0);
         vCol = vec4(clamp(pos,0.0f,1.0f),1.0f);
     })";
 
@@ -143,6 +143,7 @@ void compile_shader()
 
     // Bind Uniform Variables 
     uniformModel = glGetUniformLocation(shader, "model");
+    uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 void update()
@@ -156,13 +157,6 @@ void update()
         direction = !direction;
 
     curAngle+= 0.01f;
-    
-    glm::mat4 model(1.0f);
-    model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-   // model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(0.40f, 0.5f,1.0f));
-    //Change Value of uniform Variable 
-    glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 }
 
 int main()
@@ -216,6 +210,8 @@ int main()
     create_triangle();
     compile_shader();
 
+    glm::mat4 projection = glm::perspective(45.0f, (GLfloat) bufferWidth/(GLfloat) bufferHeight , 0.1f, 100.0f);
+    
     // window loop
     while(!glfwWindowShouldClose(mainWindow))     // WindowShouldClose allows us to use things like "X icon" to close the window
     {
@@ -229,6 +225,15 @@ int main()
         glUseProgram(shader);   // tell gpu to use this shader
 
         update();
+
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, triOffset, -2.5f));
+        model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.4f, 0.5f,1.0f));
+        //Change Value of uniform Variable
+    
+        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
         
         glBindVertexArray(vao);     // Bind Vertex Array
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ibo);
