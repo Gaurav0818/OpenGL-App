@@ -14,6 +14,7 @@ bool direction = true;
 float triOffset = 0.0f;
 float triMaxOffset = 0.8f;
 float triIncrement = 0.0002f;
+float curAngle = 0.0f;
 
 // Vertex Shader
 static const char* v_shader = R"(
@@ -128,6 +129,19 @@ void compile_shader()
     uniformSize = glGetUniformLocation(shader, "size");
 }
 
+void update()
+{
+    if(direction)
+        triOffset += triIncrement;
+    else
+        triOffset -= triIncrement;
+
+    if(abs(triOffset) >= triMaxOffset)
+        direction = !direction;
+
+    curAngle+= 0.01f;
+}
+
 int main()
 {
     if(!glfwInit())         //initialise GLFW 
@@ -183,14 +197,7 @@ int main()
         // Get + Handle user input events
         glfwPollEvents();
 
-        if(direction)
-            triOffset += triIncrement;
-        else
-            triOffset -= triIncrement;
-
-        if(abs(triOffset) >= triMaxOffset)
-            direction = !direction;
-        
+        update();
         // Clear Window
         glClearColor( 0.05f, 0.2f, 0.2f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);       // openGL has more then color, which we need to clear;
@@ -198,11 +205,11 @@ int main()
         glUseProgram(shader);   // tell gpu to use this shader
 
         glm::mat4 model(1.0f);
+        model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
         model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
-        model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
         //Change Value of uniform Variable 
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1f(uniformSize, 0.2);
+        glUniform1f(uniformSize,0.3);
         
         glBindVertexArray(vao);     // Bind Vertex Array 
         glDrawArrays(GL_TRIANGLES, 0, 3);       
