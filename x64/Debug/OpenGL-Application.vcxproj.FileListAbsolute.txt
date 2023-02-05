@@ -1,1 +1,2 @@
 E:\Dev\Major Project\OpenGLApp\x64\Debug\OpenGL-Application.exe
+E:\Dev\Graphic Application\OpenGL-Course\x64\Debug\OpenGL-Application.exe
