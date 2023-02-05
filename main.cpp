@@ -4,18 +4,24 @@
 #include <GLFW/glfw3.h>
 
 constexpr  GLint width = 1920, height =1080;
-GLuint vao, vbo, shader;
+GLuint vao, vbo, shader, uniformXMove, uniformSize;
+
+bool direction = true;
+float triOffset = 0.0f;
+float triMaxOffset = 0.7f;
+float triIncrement = 0.0002f;
 
 // Vertex Shader
 static const char* v_shader = R"(
     #version 460
 
     layout (location = 0 ) in vec3 pos;
-    float size = 0.4f;
+    uniform float size;
+    uniform float xMove; 
     
     void main()
     {
-        gl_Position =  vec4(size * pos.x,size * pos.y,size * pos.z, 1.0);
+        gl_Position =  vec4(size * pos.x + xMove, size * pos.y, size * pos.z, 1.0);
     })";
 
 // Fragment Shader
@@ -112,6 +118,10 @@ void compile_shader()
         std::cout<<" Error Validating Program: \n"<<eLog<<std::endl;
         return;
     }
+
+    // Bind Uniform Variables 
+    uniformXMove = glGetUniformLocation(shader, "xMove");
+    uniformSize = glGetUniformLocation(shader, "size");
 }
 
 int main()
@@ -169,12 +179,24 @@ int main()
         // Get + Handle user input events
         glfwPollEvents();
 
+        if(direction)
+            triOffset += triIncrement;
+        else
+            triOffset -= triIncrement;
+
+        if(abs(triOffset) >= triMaxOffset)
+            direction = !direction;
+        
         // Clear Window
         glClearColor( 0.05f, 0.2f, 0.2f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);       // openGL has more then color, which we need to clear;
 
         glUseProgram(shader);   // tell gpu to use this shader
 
+        //Change Value of uniform Variable 
+        glUniform1f(uniformXMove, triOffset);
+        glUniform1f(uniformSize, 0.2);
+        
         glBindVertexArray(vao);     // Bind Vertex Array 
         glDrawArrays(GL_TRIANGLES, 0, 3);       
         glBindVertexArray(0);       // UnBind Vertex Array 
