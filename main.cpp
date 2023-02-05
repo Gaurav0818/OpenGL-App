@@ -8,7 +8,7 @@
 
 constexpr  GLint width = 1920, height =1080;
 constexpr float toRadians = 3.14159265f / 180.0f;
-GLuint vao, vbo, shader, uniformModel;
+GLuint vao, vbo, ibo, shader, uniformModel;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -48,24 +48,35 @@ static const char* f_shader = R"(
 
 void create_triangle()
 {
-    GLfloat vertices[] =
-        {
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            0.0f, 1.0f, 0.0f
-        };
-
+    unsigned int indices[] = {
+        0, 3, 1,
+        1, 3, 2,
+        2, 3, 0,
+        0, 1, 2 
+    };
+    GLfloat vertices[] = {
+       -1.0f, -1.0f, 0.0f,
+       0.0f, -1.0f, 1.0f,
+       1.0f, -1.0f, 0.0f,
+       0.0f, 1.0f, 0.0f
+    };
+    
     glGenVertexArrays(1, &vao); // Amount of Array we want to create and gives us its ID  
     glBindVertexArray(vao); // Binding our created ID, so now any openGL Buffer or Array will take palace in this ID
 
-    glGenBuffers(1, &vbo); // Create a Buffer Object inside that VAO and give us its ID 
+    glGenBuffers(1, &ibo);  //Create a index Buffer Object inside that VAO and give us its ID (for Indices or elements) 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);     
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    
+    glGenBuffers(1, &vbo); // Create a vertex Buffer Object inside that VAO and give us its ID 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW ); // Binding Data With Buffer and we cam also use GL_DYNAMIC_DRAW
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
     glEnableVertexAttribArray(0); // which element of Array we want to start form like above example will have 9/3 = 3  ==> { 0,1,2} arrays and start from 0
 
-    glBindBuffer(GL_ARRAY_BUFFER,0); // unbind Buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind vertex Buffer
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // unbind indices(element) buffer  
     glBindVertexArray(0);   // unbind Array
 }
 
@@ -147,8 +158,8 @@ void update()
     curAngle+= 0.01f;
     
     glm::mat4 model(1.0f);
-    model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+    model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+   // model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(0.40f, 0.5f,1.0f));
     //Change Value of uniform Variable 
     glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
@@ -195,6 +206,8 @@ int main()
         glfwTerminate();
         return 1;
     }
+
+    glEnable(GL_DEPTH_TEST); // so that knows which vertex in front and which is on back 
     
     // Setup ViewPort Size
     // Define the size to defined window we will be using 
@@ -211,14 +224,16 @@ int main()
 
         // Clear Window
         glClearColor( 0.05f, 0.2f, 0.2f,1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);       // openGL has more then color, which we need to clear;
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // openGL has more then color, which we need to clear;
         
         glUseProgram(shader);   // tell gpu to use this shader
 
         update();
         
-        glBindVertexArray(vao);     // Bind Vertex Array 
-        glDrawArrays(GL_TRIANGLES, 0, 3);       
+        glBindVertexArray(vao);     // Bind Vertex Array
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ibo);
+        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
         glBindVertexArray(0);       // UnBind Vertex Array
         
         glfwSwapBuffers(mainWindow);    // We Draw to a scene we cant see, after drawing swap with display buffer 
