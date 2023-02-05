@@ -21,23 +21,29 @@ static const char* v_shader = R"(
     #version 460
 
     layout (location = 0 ) in vec3 pos;
+
+    out vec4 vCol;
+
     uniform float size;
     uniform mat4 model; 
     
     void main()
     {
         gl_Position =  model * vec4(pos, 1.0);
+        vCol = vec4(clamp(pos,0.0f,1.0f),1.0f);
     })";
 
 // Fragment Shader
 static const char* f_shader = R"(
     #version 460
+    
+    in vec4 vCol;
 
     out vec4 colour;
     
     void main()
     {
-        colour = vec4( 0.3f, 0.3f, 0.8f, 1.0f);
+        colour = vCol;
     })";
 
 void create_triangle()
@@ -139,6 +145,13 @@ void update()
         direction = !direction;
 
     curAngle+= 0.01f;
+    
+    glm::mat4 model(1.0f);
+    model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(0.40f, 0.5f,1.0f));
+    //Change Value of uniform Variable 
+    glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 }
 
 int main()
@@ -196,19 +209,13 @@ int main()
         // Get + Handle user input events
         glfwPollEvents();
 
-        update();
         // Clear Window
         glClearColor( 0.05f, 0.2f, 0.2f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT);       // openGL has more then color, which we need to clear;
-
+        
         glUseProgram(shader);   // tell gpu to use this shader
 
-        glm::mat4 model(1.0f);
-        //model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-        //model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.40f, 0.5f,1.0f));
-        //Change Value of uniform Variable 
-        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+        update();
         
         glBindVertexArray(vao);     // Bind Vertex Array 
         glDrawArrays(GL_TRIANGLES, 0, 3);       
