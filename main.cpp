@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 constexpr  GLint width = 1920, height =1080;
+constexpr float toRadians = 3.14159265f / 180.0f;
 GLuint vao, vbo, shader, uniformModel, uniformSize;
 
 bool direction = true;
@@ -198,14 +199,14 @@ int main()
 
         glm::mat4 model(1.0f);
         model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+        model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
         //Change Value of uniform Variable 
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1f(uniformSize, 0.2);
         
         glBindVertexArray(vao);     // Bind Vertex Array 
         glDrawArrays(GL_TRIANGLES, 0, 3);       
-        glBindVertexArray(0);       // UnBind Vertex Array 
-        
+        glBindVertexArray(0);       // UnBind Vertex Array
         
         glfwSwapBuffers(mainWindow);    // We Draw to a scene we cant see, after drawing swap with display buffer 
     }
