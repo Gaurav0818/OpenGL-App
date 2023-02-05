@@ -2,13 +2,16 @@
 
 #include <glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 constexpr  GLint width = 1920, height =1080;
-GLuint vao, vbo, shader, uniformXMove, uniformSize;
+GLuint vao, vbo, shader, uniformModel, uniformSize;
 
 bool direction = true;
 float triOffset = 0.0f;
-float triMaxOffset = 0.7f;
+float triMaxOffset = 0.8f;
 float triIncrement = 0.0002f;
 
 // Vertex Shader
@@ -17,11 +20,11 @@ static const char* v_shader = R"(
 
     layout (location = 0 ) in vec3 pos;
     uniform float size;
-    uniform float xMove; 
+    uniform mat4 model; 
     
     void main()
     {
-        gl_Position =  vec4(size * pos.x + xMove, size * pos.y, size * pos.z, 1.0);
+        gl_Position =  model * vec4(size * pos.x , size * pos.y, size * pos.z, 1.0);
     })";
 
 // Fragment Shader
@@ -120,7 +123,7 @@ void compile_shader()
     }
 
     // Bind Uniform Variables 
-    uniformXMove = glGetUniformLocation(shader, "xMove");
+    uniformModel = glGetUniformLocation(shader, "model");
     uniformSize = glGetUniformLocation(shader, "size");
 }
 
@@ -193,8 +196,10 @@ int main()
 
         glUseProgram(shader);   // tell gpu to use this shader
 
+        glm::mat4 model(1.0f);
+        model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
         //Change Value of uniform Variable 
-        glUniform1f(uniformXMove, triOffset);
+        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1f(uniformSize, 0.2);
         
         glBindVertexArray(vao);     // Bind Vertex Array 
