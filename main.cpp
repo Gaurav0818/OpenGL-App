@@ -8,7 +8,7 @@
 
 constexpr  GLint width = 1920, height =1080;
 constexpr float toRadians = 3.14159265f / 180.0f;
-GLuint vao, vbo, shader, uniformModel, uniformSize;
+GLuint vao, vbo, shader, uniformModel;
 
 bool direction = true;
 float triOffset = 0.0f;
@@ -26,7 +26,7 @@ static const char* v_shader = R"(
     
     void main()
     {
-        gl_Position =  model * vec4(size * pos.x , size * pos.y, size * pos.z, 1.0);
+        gl_Position =  model * vec4(pos, 1.0);
     })";
 
 // Fragment Shader
@@ -126,7 +126,6 @@ void compile_shader()
 
     // Bind Uniform Variables 
     uniformModel = glGetUniformLocation(shader, "model");
-    uniformSize = glGetUniformLocation(shader, "size");
 }
 
 void update()
@@ -205,11 +204,11 @@ int main()
         glUseProgram(shader);   // tell gpu to use this shader
 
         glm::mat4 model(1.0f);
-        model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-        model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+        //model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+        //model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.40f, 0.5f,1.0f));
         //Change Value of uniform Variable 
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1f(uniformSize,0.3);
         
         glBindVertexArray(vao);     // Bind Vertex Array 
         glDrawArrays(GL_TRIANGLES, 0, 3);       
