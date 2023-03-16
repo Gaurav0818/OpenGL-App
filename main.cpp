@@ -10,18 +10,24 @@
 
 
 #include "Mesh.h"
+#include "Shader.h"
 
+
+
+std::vector<Shader> shaderList;
 std::vector<Mesh*> meshList;
 
 constexpr  GLint width = 1920, height =1080;
 constexpr float toRadians = 3.14159265f / 180.0f;
-GLuint vao, vbo, ibo, shader, uniformModel, uniformProjection;
 
 bool direction = true;
 float triOffset = 0.0f;
 float triMaxOffset = 0.8f;
 float triIncrement = 0.0002f;
 float curAngle = 0.0f;
+
+static const char* vShader = "Shader/shader.vert";
+static const char* fShader = "Shader/shader.frag";
 
 // Vertex Shader
 static const char* v_shader = R"(
@@ -53,7 +59,7 @@ static const char* f_shader = R"(
         colour = vCol;
     })";
 
-void create_triangle()
+void CreateObjects()
 {
     unsigned int indices[] = {
         0, 3, 1,
@@ -77,70 +83,12 @@ void create_triangle()
     meshList.push_back(obj2);
 }
 
-void add_shader(GLuint theProgram, const char* shaderCode, GLenum shaderType)
+void CreateShaders()
 {
-    GLuint theShader = glCreateShader(shaderType);  // create Shader 
-
-    const GLchar* theCode[1];       // Grab The shader Code 
-    theCode[0] = shaderCode;        // Get shader Code Length 
-
-    GLint codeLength[1];
-    codeLength[0] = strlen(shaderCode);
-
-    glShaderSource(theShader, 1, theCode, codeLength);      // Put that into Shader
-    glCompileShader(theShader);     // Compile Shader 
-
-    // Validate Shader 
-    GLint result = 0;
-    GLchar eLog[1024] = { 0 };
-    
-    glGetShaderiv(theShader, GL_COMPILE_STATUS, &result);
-    if(!result)
-    {
-        glGetProgramInfoLog(theShader, sizeof(eLog), nullptr, eLog);
-        std::cout<<" Error Compiling the "<< shaderType <<" : \n"<<eLog<<std::endl;
-        return;
-    }
-    glAttachShader(theProgram, theShader);
-}
-
-void compile_shader()
-{
-    shader = glCreateProgram();         // Create a Program for Shader 
-    if(!shader)
-    {
-        std::cout<<"Error Creating Shader Program!\n";
-        return;
-    }
-    
-    add_shader(shader, v_shader, GL_VERTEX_SHADER);     // Add vertex Shader to Shader Program
-    add_shader(shader, f_shader, GL_FRAGMENT_SHADER);   // Add fragment Shader to Shader Program 
-
-    // Validate program
-    GLint result = 0;
-    GLchar eLog[1024] = { 0 };
-
-    glLinkProgram(shader);
-    glGetProgramiv(shader, GL_LINK_STATUS, &result);
-    if(!result)
-    {
-        glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog);
-        std::cout<<" Error Linking Program: \n"<<eLog<<std::endl;
-        return;
-    }
-
-    glValidateProgram(shader);
-    glGetProgramiv(shader, GL_VALIDATE_STATUS, &result);
-    if(!result)
-    {
-        glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog);
-        std::cout<<" Error Validating Program: \n"<<eLog<<std::endl;
-        return;
-    }
-
-    // Bind Uniform Variables 
-    uniformModel = glGetUniformLocation(shader, "model");
-    uniformProjection = glGetUniformLocation(shader, "projection");
+	Shader  *shader1 = new Shader();
+    //shader1->CreateFromString(v_shader, f_shader);
+    shader1->CreateFromFiles(vShader, fShader);
+    shaderList.push_back(*shader1);
 }
 
 void update()
@@ -155,6 +103,7 @@ void update()
 
     curAngle+= 0.01f;
 }
+
 
 int main()
 {
@@ -204,8 +153,10 @@ int main()
     // Define the size to defined window we will be using 
     glViewport(0, 0, bufferWidth, bufferHeight);
 
-    create_triangle();
-    compile_shader();
+    CreateObjects();
+    CreateShaders();
+
+    unsigned int uniformProjection = 0, uniformModel =0;
 
     glm::mat4 projection = glm::perspective(45.0f, (GLfloat) bufferWidth/(GLfloat) bufferHeight , 0.1f, 100.0f);
     
@@ -219,7 +170,10 @@ int main()
         glClearColor( 0.05f, 0.2f, 0.2f,1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // openGL has more then color, which we need to clear;
         
-        glUseProgram(shader);   // tell gpu to use this shader
+        shaderList[0].UseShader();   // tell gpu to use this shader
+
+        uniformModel = shaderList[0].GetModelLocation();
+        uniformProjection = shaderList[0].GetProjectionLocation();
 
         update();
 
