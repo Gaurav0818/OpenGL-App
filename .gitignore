@@ -1,0 +1,5 @@
+*.ipch
+.vs/OpenGL-Course/v17/Browse.VC.opendb
+.vs/OpenGL-Course/v17/Browse.VC.db-wal
+.vs/OpenGL-Course/v17/Browse.VC.db-shm
+.vs/OpenGL-Course/v17/Browse.VC.db
