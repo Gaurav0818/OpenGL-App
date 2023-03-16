@@ -1,10 +1,17 @@
 ﻿#include <iostream>
+#include <vector>
+
 
 #include <glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+
+#include "Mesh.h"
+
+std::vector<Mesh*> meshList;
 
 constexpr  GLint width = 1920, height =1080;
 constexpr float toRadians = 3.14159265f / 180.0f;
@@ -60,24 +67,14 @@ void create_triangle()
        1.0f, -1.0f, 0.0f,
        0.0f, 1.0f, 0.0f
     };
-    
-    glGenVertexArrays(1, &vao); // Amount of Array we want to create and gives us its ID  
-    glBindVertexArray(vao); // Binding our created ID, so now any openGL Buffer or Array will take palace in this ID
 
-    glGenBuffers(1, &ibo);  //Create a index Buffer Object inside that VAO and give us its ID (for Indices or elements) 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);     
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-    
-    glGenBuffers(1, &vbo); // Create a vertex Buffer Object inside that VAO and give us its ID 
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW ); // Binding Data With Buffer and we cam also use GL_DYNAMIC_DRAW
+    Mesh *obj1 = new Mesh;
+    obj1->CreateMesh(vertices, indices, 12, 12);
+    meshList.push_back(obj1);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(0); // which element of Array we want to start form like above example will have 9/3 = 3  ==> { 0,1,2} arrays and start from 0
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind vertex Buffer
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);   // unbind indices(element) buffer  
-    glBindVertexArray(0);   // unbind Array
+	Mesh *obj2 = new Mesh;
+    obj1->CreateMesh(vertices, indices, 12, 12);
+    meshList.push_back(obj2);
 }
 
 void add_shader(GLuint theProgram, const char* shaderCode, GLenum shaderType)
@@ -235,11 +232,21 @@ int main()
         glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
         
-        glBindVertexArray(vao);     // Bind Vertex Array
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,ibo);
-        glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
-        glBindVertexArray(0);       // UnBind Vertex Array
+        meshList[0]->RenderMesh();
+
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3( triOffset, 1.0f, -2.5f));
+        model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.4f, 0.5f,1.0f));
+        //Change Value of uniform Variable
+    
+        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+
+
+        meshList[0]->RenderMesh();
+
+        glUseProgram(0);
         
         glfwSwapBuffers(mainWindow);    // We Draw to a scene we cant see, after drawing swap with display buffer 
     }
