@@ -2,7 +2,7 @@
 
 #include <glew.h>
 
-#include <glm/glm.hpp>
+#include <glm\glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <GLFW/glfw3.h>
@@ -15,6 +15,8 @@ public:
 
 	void keyControl(bool* keys, GLfloat deltaTime); // Controls the movement of the camera when keys are pressed
 	void mouseControl(GLfloat xChange, GLfloat yChange); // Controls the movement of thge camera when the mouse is moved.
+
+	glm::vec3 getCameraPosition();
 
 	glm::mat4 calculateViewMatrix();
 
