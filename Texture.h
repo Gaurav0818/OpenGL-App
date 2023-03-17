@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glew.h>
-
 #include "stb_image.h"
 
 class Texture
@@ -9,12 +8,11 @@ class Texture
 public:
 	Texture();
 	Texture(const char* fileLoc);
+	~Texture();
 
 	void LoadTexture();
 	void UseTexture();
 	void ClearTexture();
-
-	~Texture();
 
 private:
 	GLuint textureID;
