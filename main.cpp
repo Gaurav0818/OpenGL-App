@@ -10,125 +10,110 @@
 #include "GameWindow.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Camera.h"
 
+const float toRadians = 3.14159265f / 180.0f;
 
 GameWindow mainWindow;
-std::vector<Shader> shaderList;
 std::vector<Mesh*> meshList;
+std::vector<Shader> shaderList;
+Camera camera;
 
-constexpr float toRadians = 3.14159265f / 180.0f;
+GLfloat deltaTime = 0.0f;
+GLfloat lastTime = 0.0f;
 
-bool direction = true;
-float triOffset = 0.0f;
-float triMaxOffset = 0.8f;
-float triIncrement = 0.0002f;
-float curAngle = 0.0f;
-
+// Vertex Shader
 static const char* vShader = "Shader/shader.vert";
+
+// Fragment Shader
 static const char* fShader = "Shader/shader.frag";
 
-
-void CreateObjects()
+void CreateObjects() 
 {
-    unsigned int indices[] = {
-        0, 3, 1,
-        1, 3, 2,
-        2, 3, 0,
-        0, 1, 2 
-    };
-    GLfloat vertices[] = {
-       -1.0f, -1.0f, 0.0f,
-       0.0f, -1.0f, 1.0f,
-       1.0f, -1.0f, 0.0f,
-       0.0f, 1.0f, 0.0f
-    };
+	unsigned int indices[] = {
+		0, 3, 1,
+		1, 3, 2,
+		2, 3, 0,
+		0, 1, 2
+	};
 
-    Mesh *obj1 = new Mesh;
-    obj1->CreateMesh(vertices, indices, 12, 12);
-    meshList.push_back(obj1);
+	GLfloat vertices[] = {
+		-1.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 1.0f,
+		1.0f, -1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f
+	};
 
-	Mesh *obj2 = new Mesh;
-    obj1->CreateMesh(vertices, indices, 12, 12);
-    meshList.push_back(obj2);
+	Mesh *obj1 = new Mesh();
+	obj1->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj1);
+
+	Mesh *obj2 = new Mesh();
+	obj2->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj2);
 }
 
 void CreateShaders()
 {
-	Shader  *shader1 = new Shader();
-    shader1->CreateFromFiles(vShader, fShader);
-    shaderList.push_back(*shader1);
+	Shader *shader1 = new Shader();
+	shader1->CreateFromFiles(vShader, fShader);
+	shaderList.push_back(*shader1);
 }
 
-void update()
+int main() 
 {
-    if(direction)
-        triOffset += triIncrement;
-    else
-        triOffset -= triIncrement;
+	mainWindow = GameWindow(800, 600);
+	mainWindow.Initialise();
 
-    if(abs(triOffset) >= triMaxOffset)
-        direction = !direction;
+	CreateObjects();
+	CreateShaders();
 
-    curAngle+= 0.01f;
-}
+	camera = Camera(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.5f);
 
+	GLuint uniformProjection = 0, uniformModel = 0, uniformView = 0;
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (GLfloat)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
 
-int main()
-{
-    mainWindow = GameWindow(800,600);
-    mainWindow.Initialize();
+	// Loop until window closed
+	while (!mainWindow.getShouldClose())
+	{
+		GLfloat now = glfwGetTime(); // SDL_GetPerformanceCounter();
+		deltaTime = now - lastTime; // (now - lastTime)*1000/SDL_GetPerformanceFrequency();
+		lastTime = now;
 
-    CreateObjects();
-    CreateShaders();
+		// Get + Handle User Input
+		glfwPollEvents();
 
-    unsigned int uniformProjection = 0, uniformModel =0;
+		camera.keyControl(mainWindow.getsKeys(), deltaTime);
+		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 
-    glm::mat4 projection = glm::perspective(45.0f, mainWindow.GetBufferWidth()/mainWindow.GetBufferHeigth() , 0.1f, 100.0f);
-    
-    // window loop
-    while(!mainWindow.GetShouldClose())     // WindowShouldClose allows us to use things like "X icon" to close the window
-    {
-        // Get + Handle user input events
-        glfwPollEvents();
+		// Clear the window
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Clear Window
-        glClearColor( 0.05f, 0.2f, 0.2f,1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // openGL has more then color, which we need to clear;
-        
-        shaderList[0].UseShader();   // tell gpu to use this shader
+		shaderList[0].UseShader();
+		uniformModel = shaderList[0].GetModelLocation();
+		uniformProjection = shaderList[0].GetProjectionLocation();
+		uniformView = shaderList[0].GetViewLocation();
 
-        uniformModel = shaderList[0].GetModelLocation();
-        uniformProjection = shaderList[0].GetProjectionLocation();
+		glm::mat4 model = glm::mat4(1.0);
 
-        update();
+		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix()));
+		meshList[0]->RenderMesh();
 
-        glm::mat4 model(1.0f);
-        model = glm::translate(model, glm::vec3(0.0f, triOffset, -2.5f));
-        model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.4f, 0.5f,1.0f));
-        //Change Value of uniform Variable
-    
-        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
-        
-        meshList[0]->RenderMesh();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -2.5f));
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		meshList[1]->RenderMesh();
 
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3( triOffset, 1.0f, -2.5f));
-        model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::scale(model, glm::vec3(0.4f, 0.5f,1.0f));
-        //Change Value of uniform Variable
-    
-        glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUseProgram(0);
 
+		mainWindow.swapBuffers();
+	}
 
-        meshList[0]->RenderMesh();
-
-        glUseProgram(0);
-
-        mainWindow.SwapBuffers();
-           
-    }
-    return 0;
+	return 0;
 }

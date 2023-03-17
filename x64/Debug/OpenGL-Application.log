@@ -1,4 +1,3 @@
 ﻿  main.cpp
-E:\Dev\Graphic Application\OpenGL-Course\GameWindow.h(19,36): warning C4244: 'return': conversion from 'GLint' to 'GLfloat', possible loss of data
-E:\Dev\Graphic Application\OpenGL-Course\GameWindow.h(20,37): warning C4244: 'return': conversion from 'GLint' to 'GLfloat', possible loss of data
+E:\Dev\Graphic Application\OpenGL-Course\main.cpp(79,15): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
   OpenGL-Application.vcxproj -> E:\Dev\Graphic Application\OpenGL-Course\x64\Debug\OpenGL-Application.exe

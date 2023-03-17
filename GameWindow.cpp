@@ -4,65 +4,149 @@ GameWindow::GameWindow()
 {
 	width = 800;
 	height = 600;
+
+	for(size_t i = 0; i < 1024; i++)
+	{
+		keys[i] = 0;
+	}
+	
+	xChange = 0.0f;
+	yChange = 0.0f;
+}
+
+GameWindow::GameWindow(GLint windowWidth, GLint windowHeight)
+{
+	width = windowWidth;
+	height = windowHeight;
+
+	for (size_t i = 0; i < 1024; i++)
+	{
+		keys[i] = 0;
+	}
+	
+	xChange = 0.0f;
+	yChange = 0.0f;
+}
+
+int GameWindow::Initialise()
+{
+	if (!glfwInit())
+	{
+		printf("Error Initialising GLFW");
+		glfwTerminate();
+		return 1;
+	}
+
+	// Setup GLFW Windows Properties
+	// OpenGL version
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	// Core Profile
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	// Allow forward compatiblity
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+	// Create the window
+	mainWindow = glfwCreateWindow(width, height, "Test Window", NULL, NULL);
+	if (!mainWindow)
+	{
+		printf("Error creating GLFW window!");
+		glfwTerminate();
+		return 1;
+	}
+
+	// Get buffer size information
+	glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
+
+	// Set the current context
+	glfwMakeContextCurrent(mainWindow);
+
+	// Handle Key + Mouse Input
+	createCallbacks();
+	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	// Allow modern extension access
+	glewExperimental = GL_TRUE;
+
+	GLenum error = glewInit();
+	if (error != GLEW_OK)
+	{
+		printf("Error: %s", glewGetErrorString(error));
+		glfwDestroyWindow(mainWindow);
+		glfwTerminate();
+		return 1;
+	}
+
+	glEnable(GL_DEPTH_TEST);
+
+	// Create Viewport
+	glViewport(0, 0, bufferWidth, bufferHeight);
+
+	glfwSetWindowUserPointer(mainWindow, this);
+}
+
+void GameWindow::createCallbacks()
+{
+	glfwSetKeyCallback(mainWindow, handleKeys);
+	glfwSetCursorPosCallback(mainWindow, handleMouse);
+}
+
+GLfloat GameWindow::getXChange()
+{
+	GLfloat theChange = xChange;
+	xChange = 0.0f;
+	return theChange;
+}
+
+GLfloat GameWindow::getYChange()
+{
+	GLfloat theChange = yChange;
+	yChange = 0.0f;
+	return theChange;
+}
+
+void GameWindow::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
+{
+	GameWindow* theWindow = static_cast<GameWindow*>(glfwGetWindowUserPointer(window));
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, GL_TRUE);
+	}
+
+	if (key >= 0 && key < 1024)
+	{
+		if (action == GLFW_PRESS)
+		{
+			theWindow->keys[key] = true;
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			theWindow->keys[key] = false;
+		}
+	}
+}
+
+void GameWindow::handleMouse(GLFWwindow* window, double xPos, double yPos)
+{
+	GameWindow* theWindow = static_cast<GameWindow*>(glfwGetWindowUserPointer(window));
+
+	if (theWindow->mouseFirstMoved)
+	{
+		theWindow->lastX = xPos;
+		theWindow->lastY = yPos;
+		theWindow->mouseFirstMoved = false;
+	}
+
+	theWindow->xChange = xPos - theWindow->lastX;
+	theWindow->yChange = theWindow->lastY - yPos;
+
+	theWindow->lastX = xPos;
+	theWindow->lastY = yPos;
 }
 
 GameWindow::~GameWindow()
 {
-    glfwDestroyWindow(mainWindow);
-    glfwTerminate();
-}
-
-GameWindow::GameWindow(unsigned windowWidth, unsigned windowHeight)
-{
-	width = windowWidth;
-	height = windowHeight;
-}
-
-int GameWindow::Initialize()
-{
-	if(!glfwInit())         //initialise GLFW 
-    {
-        std::cout<<"GLFW initialization failed! \n";
-        glfwTerminate();
-        return 1;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); // Core Profile = no backward Compatibility  
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    
-    mainWindow = glfwCreateWindow(width, height, "Test Window", nullptr, nullptr);
-
-    if(!mainWindow)
-    {
-        std::cout<<"GLFW Window Creation Failed! \n";
-        glfwTerminate();
-        return 1;
-    }
-
-    // Get Buffer Size Information
-    // Get Info of Area within the Window which will contain all our OpenGL data
-    glfwGetFramebufferSize(mainWindow, &bufferWidth, &bufferHeight);
-
-    // Set Context for GLEW to use
-    // Set window which will be used by OPenGl can be used in a case where we are using two window
-    glfwMakeContextCurrent(mainWindow);
-
-    // Allow Modern Extension Feature
-    glewExperimental = GL_TRUE;
-
-    if(glewInit() != GLEW_OK)
-    {
-        std::cout<<"GLEW initialize failed! \n";
-        glfwDestroyWindow(mainWindow);
-        glfwTerminate();
-        return 1;
-    }
-
-    glEnable(GL_DEPTH_TEST); // so that knows which vertex in front and which is on back 
-    
-    // Setup ViewPort Size
-    // Define the size to defined window we will be using 
-    glViewport(0, 0, bufferWidth, bufferHeight);
+	glfwDestroyWindow(mainWindow);
+	glfwTerminate();
 }
