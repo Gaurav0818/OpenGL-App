@@ -7,9 +7,6 @@
 
 #include <glew.h>
 
-#include <glm\glm.hpp>
-#include <glm\gtc\type_ptr.hpp>
-
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "CommonValues.h"
@@ -34,15 +31,9 @@ public:
 	GLuint GetEyePositionLocation();
 	GLuint GetSpecularIntensityLocation();
 	GLuint GetShininessLocation();
-	GLuint GetTextureLocation();
-	GLuint GetDirectionalLightTransformLocation();
-	GLuint GetDirectionalShadowMapLocation();
 
 	void SetDirectionalLight(DirectionalLight* dLight);
 	void SetPointLights(PointLight* pLight, unsigned int lightCount);
-	void SetTexture(GLuint textureUnit);
-	void SetDirectionalShadowMap(GLuint textureUnit);
-	void SetDirectionalLightTransform(glm::mat4* lTransform);
 
 	void UseShader();
 	void ClearShader();
@@ -54,9 +45,7 @@ private:
 
 	GLuint shaderID, uniformProjection, uniformModel, uniformView,
 		uniformEyePosition,
-		uniformSpecularIntensity, uniformShininess,
-		uniformTexture,
-		uniformDirectionalLightTransform, uniformDirectionalShadowMap;
+		uniformSpecularIntensity, uniformShininess;
 
 	// Has no name, but is an instance referenced by variable name "uniformDirectionalLight"
 	struct {
