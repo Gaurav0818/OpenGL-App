@@ -1,6 +1,5 @@
 ﻿#define STB_IMAGE_IMPLEMENTATION
 
-
 #include <stdio.h>
 #include <string.h>
 #include <cmath>
@@ -23,7 +22,7 @@
 #include "DirectionalLight.h"
 #include "PointLight.h"
 #include "Material.h"
-
+#include "Model.h"
 
 const float toRadians = 3.14159265f / 180.0f;
 
@@ -44,6 +43,10 @@ PointLight pointLights[MAX_POINT_LIGHTS];
 // Materials
 Material shinyMaterial;
 Material dullMaterial;
+
+
+//Model blackHawk;
+
 
 GLfloat deltaTime = 0.0f; // Change in time.
 GLfloat lastTime = 0.0f; // What the last time was.
@@ -133,21 +136,24 @@ int main()
 	plainTexture = Texture("Textures/plain.png");
 	plainTexture.LoadTexture();
 
+	Model xWing = Model();
+	xWing.LoadModel("Models/uh60.obj");
+
 	// Creating lights
 	mainLight = DirectionalLight(1.0f, 1.0f, 1.0f, 
-								 0.0f, 0.0f,
+								 0.2f, 0.4f,
 								 2.0f, -1.0f, -2.0f);
 	
 	unsigned int pointLightCount = 0;
 
 	pointLights[0] = PointLight(0.0f, 0.0f, 1.0f,
-								0.1f, 0.4f,
+								0.0f, 0.0f,
 								0.0f, 0.0f, 0.0f,
 								0.3f, 0.2f, 0.1f);
 	pointLightCount++;
 
 	pointLights[1] = PointLight(0.0f, 1.0f, 0.0f,
-								0.1f, 1.0f,
+								0.0f, 0.0f,
 								-4.0f, 2.0f, 0.0f,
 								0.3f, 0.1f, 0.1f);
 	pointLightCount++;
@@ -199,23 +205,23 @@ int main()
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix())); // USes the camera to get our view matrix.
 		glUniform3f(uniformEyePosition, camera.getCameraPosition().x, camera.getCameraPosition().y, camera.getCameraPosition().z);
 
-		glm::mat4 model(1.0f);	
+		glm::mat4 model(1.0f);
+		 
+		//model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
+		////model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//brickTexture.UseTexture();
+		//shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//meshList[0]->RenderMesh();
 
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -2.5f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		brickTexture.UseTexture();
-		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[0]->RenderMesh();
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 4.0f, -2.5f));
-		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
-		dirtTexture.UseTexture();
-		dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
-		meshList[1]->RenderMesh();
-
+		//model = glm::mat4(1.0f);
+		//model = glm::translate(model, glm::vec3(0.0f, 4.0f, -2.5f));
+		////model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+		//glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		//dirtTexture.UseTexture();
+		//dullMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		//meshList[1]->RenderMesh();
+//
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -2.0f, 0.0f));
 		//model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
@@ -223,6 +229,13 @@ int main()
 		plainTexture.UseTexture();
 		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
 		meshList[2]->RenderMesh();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-7.0f, -2.0f, 10.0f));
+		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f) / 1.0f);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		shinyMaterial.UseMaterial(uniformSpecularIntensity, uniformShininess);
+		xWing.RenderModel();
 
 		glUseProgram(0);
 

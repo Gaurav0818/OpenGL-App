@@ -23,7 +23,7 @@ Texture::~Texture()
 	ClearTexture();
 }
 
-void Texture::LoadTexture()
+bool Texture::LoadTexture()
 {
 	// Loading the texture data in array. Note, array of char is like an array of bytes (each char is a byte)
 	unsigned char* texData = stbi_load(fileLocation, // Location of the texture file.
@@ -31,11 +31,71 @@ void Texture::LoadTexture()
 		&width, // Pass by reference. Will be filled with loaded texture width.
 		&bitDepth, // Pass by reference. Will be filled with loaded texture bitDepth.
 		0 // Always 0.
-	); 
+	);
 	if (!texData) // If there is no texData.
 	{
 		printf("Failed to find: %s\n", fileLocation);
-		return;
+		return false;
+	}
+
+	glGenTextures(1, &textureID); // Generating a new texture with our id.
+	glBindTexture(GL_TEXTURE_2D, textureID); // Binding our texture, with type 2D.
+
+	// Setting texture parameters
+	glTexParameteri(GL_TEXTURE_2D, // Type of Texture
+		GL_TEXTURE_WRAP_S, // Which parameter to change. Here, we change the way it wraps around the x-axis of the image.
+		GL_REPEAT // Repeats the texture.
+	);
+	glTexParameteri(GL_TEXTURE_2D, // Type of Texture
+		GL_TEXTURE_WRAP_T, // Which parameter to change. Here, we change the way it wraps around the x-axis of the image.
+		GL_REPEAT // The value. Repeats the texture, in this case.
+	);
+	glTexParameteri(GL_TEXTURE_2D, // Type of Texture
+		GL_TEXTURE_MIN_FILTER, // Which parameter to change. Here, we change the way the texture interacts when we zoom out on it.
+		GL_LINEAR // The value. Here we want to blend the texture.
+	);
+	glTexParameteri(GL_TEXTURE_2D, // Type of Texture
+		GL_TEXTURE_MAG_FILTER, // Which parameter to change. Here, we change the way the texture interacts when we zoom in on it.
+		GL_LINEAR // The value. Here we want to blend the texture.
+	);
+
+	// Loading the texture to graphics card.
+	glTexImage2D(GL_TEXTURE_2D, // Texture target, what the texture was bound to.
+		0, // Mimap level. This will define the texture for mipmap level 0. Usually, defining for 0 will use same texture across whole range.
+		GL_RGB,  // Format of stored data. If you want Alfa use RGBA.
+		width, // Width of texture
+		height, // Height of texture
+		0, // Always 0. Legacy stuff that is not used anymore.
+		GL_RGB, // Format of data being loaded. If you want Alfa use RGBA.
+		GL_UNSIGNED_BYTE, // Data type of the values.
+		texData // The data itself.
+	);
+
+	// Generate the mipmaps, automatically.
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Unbind texture.
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	// For safety, discarding the raw data.
+	stbi_image_free(texData);
+
+	return true;
+}
+
+bool Texture::LoadTextureWithAlpha()
+{
+	// Loading the texture data in array. Note, array of char is like an array of bytes (each char is a byte)
+	unsigned char* texData = stbi_load(fileLocation, // Location of the texture file.
+		&height, // Pass by reference. Will be filled with loaded texture height.
+		&width, // Pass by reference. Will be filled with loaded texture width.
+		&bitDepth, // Pass by reference. Will be filled with loaded texture bitDepth.
+		0 // Always 0.
+	);
+	if (!texData) // If there is no texData.
+	{
+		printf("Failed to find: %s\n", fileLocation);
+		return false;
 	}
 
 	glGenTextures(1, &textureID); // Generating a new texture with our id.
@@ -79,6 +139,8 @@ void Texture::LoadTexture()
 
 	// For safety, discarding the raw data.
 	stbi_image_free(texData);
+
+	return true;
 }
 
 void Texture::UseTexture()
