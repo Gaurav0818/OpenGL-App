@@ -1,3 +1,0 @@
-E:\Dev\Graphic Application\OpenGL-Course\x64\Debug\OpenGL-Application.exe
-E:\WS1\MajorProject\x64\Debug\OpenGL-Application.exe
-E:\WS1\SpotLight\x64\Debug\OpenGL-Application.exe

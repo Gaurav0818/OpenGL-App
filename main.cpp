@@ -21,6 +21,7 @@
 #include "Texture.h"
 #include "DirectionalLight.h"
 #include "PointLight.h"
+#include "SpotLight.h"
 #include "Material.h"
 #include "Model.h"
 
@@ -39,6 +40,7 @@ Texture plainTexture;
 // Lights
 DirectionalLight mainLight;
 PointLight pointLights[MAX_POINT_LIGHTS];
+SpotLight spotLights[MAX_SPOT_LIGHTS];
 
 // Materials
 Material shinyMaterial;
@@ -158,6 +160,15 @@ int main()
 								0.3f, 0.1f, 0.1f);
 	pointLightCount++;
 
+	unsigned int spotLightCount = 0;
+	spotLights[0]= SpotLight(	0.0f, 0.0f, 1.0f,
+								0.0f, 0.0f,
+								0.0f, 0.0f, 0.0f,
+								0.0f, -1.0f, 0.0f,
+								0.3f, 0.2f, 0.1f,
+								20.0f);
+
+	spotLightCount++;
 	// Creating Materials
 
 	// A shine is usually a form of 2, a power of 2. 32 is common for the average shiny object.
@@ -199,7 +210,8 @@ int main()
 		uniformShininess = shaderList[0].GetShininessLocation();
 
 		shaderList[0].SetDirectionalLight(&mainLight);
-		shaderList[0].SetPointLights(pointLights, pointLightCount);
+		//shaderList[0].SetPointLights(pointLights, pointLightCount);
+		shaderList[0].SetSpotLights(spotLights, spotLightCount);
 
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix())); // USes the camera to get our view matrix.

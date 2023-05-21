@@ -1,7 +1,0 @@
-﻿  UiContext_Imgaui.cpp
-  main.cpp
-E:\WS1\SpotLight\main.cpp(173,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-E:\WS1\SpotLight\main.cpp(181,15): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-E:\WS1\SpotLight\main.cpp(305,57): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-  Generating Code...
-  OpenGL-Application.vcxproj -> E:\WS1\SpotLight\x64\Debug\OpenGL-Application.exe
