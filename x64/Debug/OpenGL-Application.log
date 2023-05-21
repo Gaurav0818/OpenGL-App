@@ -1,8 +1,7 @@
-﻿  main.cpp
-E:\WS1\SpotLight\main.cpp(172,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
-E:\WS1\SpotLight\main.cpp(177,15): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-E:\WS1\SpotLight\main.cpp(297,57): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
-LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
-main.obj : error LNK2019: unresolved external symbol "public: __cdecl Model::Model(void)" (??0Model@@QEAA@XZ) referenced in function main
-main.obj : error LNK2019: unresolved external symbol "public: __cdecl Model::~Model(void)" (??1Model@@QEAA@XZ) referenced in function main
-E:\WS1\SpotLight\x64\Debug\OpenGL-Application.exe : fatal error LNK1120: 2 unresolved externals
+﻿  UiContext_Imgaui.cpp
+  main.cpp
+E:\WS1\SpotLight\main.cpp(173,24): warning C4244: '=': conversion from 'double' to 'GLfloat', possible loss of data
+E:\WS1\SpotLight\main.cpp(181,15): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+E:\WS1\SpotLight\main.cpp(305,57): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+  Generating Code...
+  OpenGL-Application.vcxproj -> E:\WS1\SpotLight\x64\Debug\OpenGL-Application.exe
