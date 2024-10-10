@@ -1,5 +1,15 @@
-*.ipch
-x64/Debug/*
-.idea/
+# Ignore Visual Studio Files
 .vs/
-x64/Debug
+*.sln
+*.vcxproj
+*.user
+*.filters
+
+
+# Ignore build output directories
+temp/
+
+
+# Ignore jetBrains IDE files 
+.idea/
+
